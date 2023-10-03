@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "808317363646",
+    "project_id": "shoppercart-f107f",
+    "storage_bucket": "shoppercart-f107f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808317363646:android:9ba07e16b446f7f63645ef",
+        "android_client_info": {
+          "package_name": "com.example.firebase_131_flutterfire"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY1PcaxzmwZzrGX4M1GTGydTR9ACySLGo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
