@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_131_flutterfire/firebase_options.dart';
 import 'package:firebase_131_flutterfire/note_model.dart';
+import 'package:firebase_131_flutterfire/user_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -19,25 +20,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: HomePage(),
+      home: UserPage(),
     );
   }
 }
@@ -51,6 +37,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late FirebaseFirestore db;
+  var titleController = TextEditingController();
+  var bodyController = TextEditingController();
 
   @override
   void initState() {
@@ -64,33 +52,103 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text('Notes'),
       ),
-      body: FutureBuilder(
-        future: db.collection("notes").get(),
-        builder: (_, snapshot){
-
-          if(snapshot.connectionState==ConnectionState.waiting){
-            return Center(child: CircularProgressIndicator(),);
-          } else if(snapshot.hasError){
-
-          } else if(snapshot.hasData){
+      body: StreamBuilder(
+        stream: db.collection("notes").snapshots(),
+        builder: (_, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+          } else if (snapshot.hasData) {
             return ListView.builder(
-              itemCount: snapshot.data!.docs.length,
-                itemBuilder: (_, index){
-                var model = NoteModel.fromJson(snapshot.data!.docs[index].data());
-              return ListTile(
-                title: Text('${model.title}'),
-                subtitle: Text('${model.body}'),
-              );
-            });
-          }
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (_, index) {
+                  var model =
+                      NoteModel.fromJson(snapshot.data!.docs[index].data());
+                  model.id = snapshot.data!.docs[index].id;
+                  print("id: ${model.id}");
+                  return InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (_) {
+                            print(MediaQuery.of(context).viewInsets.bottom);
+                            titleController.text = model.title!;
+                            bodyController.text = model.body!;
+                            return Container(
+                              height:
+                                  MediaQuery.of(context).viewInsets.bottom ==
+                                          0.0
+                                      ? 400
+                                      : 800,
+                              color: Colors.blue.shade100,
+                              child: Column(
+                                children: [
+                                  Text('Add Note'),
+                                  TextField(
+                                    controller: titleController,
+                                    onTap: () {},
+                                    decoration: InputDecoration(
+                                        label: Text('Title'),
+                                        hintText: "Enter title here..",
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(21))),
+                                  ),
+                                  TextField(
+                                    controller: bodyController,
+                                    decoration: InputDecoration(
+                                        label: Text('Body'),
+                                        hintText: "Write Desc here..",
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(21))),
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        //update
 
+                                        db
+                                            .collection("notes")
+                                            .doc(model.id)
+                                            .set(NoteModel(
+                                                    title: titleController.text
+                                                        .toString(),
+                                                    body: bodyController.text
+                                                        .toString())
+                                                .toJson())
+                                            .then((value) {});
+                                      },
+                                      child: Text('Update'))
+                                ],
+                              ),
+                            );
+                          });
+                    },
+                    child: ListTile(
+                      title: Text('${model.title}'),
+                      subtitle: Text('${model.body}'),
+                      trailing: InkWell(
+                          onTap: () {
+                            //delete
+                            db
+                                .collection("notes")
+                                .doc(model.id)
+                                .delete()
+                                .then((value) => print("${model.id} deleted"));
+                          },
+                          child: Icon(Icons.delete)),
+                    ),
+                  );
+                });
+          }
 
           return Container();
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-
           //add
           /*db.collection("students").add({
             "name": "Rajveer",
@@ -101,16 +159,80 @@ class _HomePageState extends State<HomePage> {
 
           });*/
 
-          db
-              .collection("notes")
-              .add(NoteModel(title: "Flutter", body: "My First Firebase app")
-                  .toJson())
-              .then((value) {
-            print(value.id);
-          });
+          showModalBottomSheet(
+              context: context,
+              builder: (_) {
+                print(MediaQuery.of(context).viewInsets.bottom);
+                return Container(
+                  height: MediaQuery.of(context).viewInsets.bottom == 0.0
+                      ? 400
+                      : 800,
+                  color: Colors.blue.shade100,
+                  child: Column(
+                    children: [
+                      Text('Add Note'),
+                      TextField(
+                        controller: titleController,
+                        onTap: () {},
+                        decoration: InputDecoration(
+                            label: Text('Title'),
+                            hintText: "Enter title here..",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(21))),
+                      ),
+                      TextField(
+                        controller: bodyController,
+                        decoration: InputDecoration(
+                            label: Text('Body'),
+                            hintText: "Write Desc here..",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(21))),
+                      ),
+                      ElevatedButton(
+                          onPressed: () {
+                            db
+                                .collection("notes")
+                                .add(NoteModel(
+                                        title: titleController.text.toString(),
+                                        body: bodyController.text.toString())
+                                    .toJson())
+                                .then((value) {
+                              print(value.id);
+                            });
+                          },
+                          child: Text('Submit'))
+                    ],
+                  ),
+                );
+              });
         },
         child: Icon(Icons.add),
       ),
     );
   }
 }
+
+//FutureBuilder(
+//         future: db.collection("notes").get(),
+//         builder: (_, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.waiting) {
+//             return Center(
+//               child: CircularProgressIndicator(),
+//             );
+//           } else if (snapshot.hasError) {
+//           } else if (snapshot.hasData) {
+//             return ListView.builder(
+//                 itemCount: snapshot.data!.docs.length,
+//                 itemBuilder: (_, index) {
+//                   var model =
+//                       NoteModel.fromJson(snapshot.data!.docs[index].data());
+//                   return ListTile(
+//                     title: Text('${model.title}'),
+//                     subtitle: Text('${model.body}'),
+//                   );
+//                 });
+//           }
+//
+//           return Container();
+//         },
+//       ),
