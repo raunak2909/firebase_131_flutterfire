@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_131_flutterfire/firebase_options.dart';
+import 'package:firebase_131_flutterfire/login_page.dart';
 import 'package:firebase_131_flutterfire/note_model.dart';
+import 'package:firebase_131_flutterfire/sign_up_page.dart';
 import 'package:firebase_131_flutterfire/user_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -23,13 +25,15 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: UserPage(),
+      home: LoginScreenPage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  String id;
+
+  HomePage({required this.id});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -53,19 +57,22 @@ class _HomePageState extends State<HomePage> {
         title: Text('Notes'),
       ),
       body: StreamBuilder(
-        stream: db.collection("notes").snapshots(),
+        stream: db
+            .collection("users")
+            .doc(widget.id)
+            .collection("notes")
+            .snapshots(),
         builder: (_, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
             );
-          } else if (snapshot.hasError) {
-          } else if (snapshot.hasData) {
+          } else if (snapshot.hasError) {} else if (snapshot.hasData) {
             return ListView.builder(
                 itemCount: snapshot.data!.docs.length,
                 itemBuilder: (_, index) {
                   var model =
-                      NoteModel.fromJson(snapshot.data!.docs[index].data());
+                  NoteModel.fromJson(snapshot.data!.docs[index].data());
                   model.id = snapshot.data!.docs[index].id;
                   print("id: ${model.id}");
                   return InkWell(
@@ -73,15 +80,21 @@ class _HomePageState extends State<HomePage> {
                       showModalBottomSheet(
                           context: context,
                           builder: (_) {
-                            print(MediaQuery.of(context).viewInsets.bottom);
+                            print(MediaQuery
+                                .of(context)
+                                .viewInsets
+                                .bottom);
                             titleController.text = model.title!;
                             bodyController.text = model.body!;
                             return Container(
                               height:
-                                  MediaQuery.of(context).viewInsets.bottom ==
-                                          0.0
-                                      ? 400
-                                      : 800,
+                              MediaQuery
+                                  .of(context)
+                                  .viewInsets
+                                  .bottom ==
+                                  0.0
+                                  ? 400
+                                  : 800,
                               color: Colors.blue.shade100,
                               child: Column(
                                 children: [
@@ -94,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                                         hintText: "Enter title here..",
                                         border: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(21))),
+                                            BorderRadius.circular(21))),
                                   ),
                                   TextField(
                                     controller: bodyController,
@@ -103,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                                         hintText: "Write Desc here..",
                                         border: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(21))),
+                                            BorderRadius.circular(21))),
                                   ),
                                   ElevatedButton(
                                       onPressed: () {
@@ -113,11 +126,11 @@ class _HomePageState extends State<HomePage> {
                                             .collection("notes")
                                             .doc(model.id)
                                             .set(NoteModel(
-                                                    title: titleController.text
-                                                        .toString(),
-                                                    body: bodyController.text
-                                                        .toString())
-                                                .toJson())
+                                            title: titleController.text
+                                                .toString(),
+                                            body: bodyController.text
+                                                .toString())
+                                            .toJson())
                                             .then((value) {});
                                       },
                                       child: Text('Update'))
@@ -162,9 +175,15 @@ class _HomePageState extends State<HomePage> {
           showModalBottomSheet(
               context: context,
               builder: (_) {
-                print(MediaQuery.of(context).viewInsets.bottom);
+                print(MediaQuery
+                    .of(context)
+                    .viewInsets
+                    .bottom);
                 return Container(
-                  height: MediaQuery.of(context).viewInsets.bottom == 0.0
+                  height: MediaQuery
+                      .of(context)
+                      .viewInsets
+                      .bottom == 0.0
                       ? 400
                       : 800,
                   color: Colors.blue.shade100,
@@ -191,11 +210,13 @@ class _HomePageState extends State<HomePage> {
                       ElevatedButton(
                           onPressed: () {
                             db
+                                .collection("users")
+                                .doc(widget.id)
                                 .collection("notes")
                                 .add(NoteModel(
-                                        title: titleController.text.toString(),
-                                        body: bodyController.text.toString())
-                                    .toJson())
+                                title: titleController.text.toString(),
+                                body: bodyController.text.toString())
+                                .toJson())
                                 .then((value) {
                               print(value.id);
                             });

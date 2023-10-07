@@ -11,15 +11,15 @@ class UserModel {
     return UserModel(
       name: json['name'],
       email: json['email'],
-      age: json['age'],
+      id: json['id'],
     );
   }
 
   Map<String, dynamic> toJson(){
     return {
-      "age" : age,
       "email": email,
       "name": name,
+      "id": id,
     };
   }
 }
