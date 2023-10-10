@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_131_flutterfire/firebase_options.dart';
 import 'package:firebase_131_flutterfire/login_page.dart';
 import 'package:firebase_131_flutterfire/note_model.dart';
+import 'package:firebase_131_flutterfire/phone_auth/login_phone_page.dart';
 import 'package:firebase_131_flutterfire/sign_up_page.dart';
 import 'package:firebase_131_flutterfire/user_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginScreenPage(),
+      home: LoginPhonePage(),
     );
   }
 }

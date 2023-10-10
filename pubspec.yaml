@@ -48,6 +48,7 @@ dependencies:
   # Icon Purpose
   font_awesome_flutter: ^10.1.0
   firebase_auth: ^4.10.1
+  google_fonts: ^6.1.0
 
 
 
